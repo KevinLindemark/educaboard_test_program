@@ -1,4 +1,4 @@
-from machine import Pin, ADC, UART
+from machine import Pin, ADC, UART, I2C
 from time import sleep
 from gps_GPGGA_GPZDA import GPS_GPGGA_GPZDA
 from rotary_encoder import rotary_encoder_tester
@@ -12,8 +12,9 @@ class opsummering:
     gps = ""
     rotary_encoder = ""
     lcd = ""
+    EEPROM = ""
     def status():
-        print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}")
+        print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}\n{opsummering.EEPROM}")
    
 def gps_tester():
     uart = UART(2, 9600)              # UART object creation
@@ -118,7 +119,22 @@ def afslut():
     else:
       print("Kører testen igen")
 
+def i2c_ping_EEPROM():
+    # husk at importere I2C fra machine modulet
+    print("Tester EEPROM I2C")
+    try:
+        i2c = I2C(0, freq = 400000)                 # I2C H/W 0 object
+        i2c.readfrom(0x50, 0)
+        return "EEPROM I2C virker"
+    except:
+        return "EEPROM I2C virker ikke"
+def port_expander_tester():
+    # TODO tag duponter kabler af og test at 2x LED2 og LED3 kan blinke
+    # kør som noget af det første inden LED kode køres
+    # tag kode fra port expander eksempel koden
+    ...
 def lmt84_tester():
+    # TODO lav en automatisk test uden bruger input (temp mellem range og range mellem 10 - 30)
     print("LMT84 test\n")
     adcVal = 0
     adcLmt84 = ADC(Pin(35))             
@@ -148,7 +164,7 @@ def lmt84_tester():
         opsummering.LMT84 = "LMT84 virker"
 
 def lcd_tester():
-    print("LCD 20x4 test. kan du se teksten på Educa boardets display? ja/nej?")
+    print("LCD 20x4 test (Husk at sætte JP5 jumper i position R7/til venstre.)\nkan du se teksten på Educa boardets display? ja/nej?")
 
     # Create the LCD object
     lcd = GpioLcd(rs_pin=Pin(27), enable_pin=Pin(25),
@@ -173,7 +189,7 @@ def lcd_tester():
     if svar_lcd == "ja":
         return "lcd display virker"
     else:
-        print("Prøv at juster kontrasten")
+        print("justér det blå trimmepotentiometer så du ser tekst eller firkanter")
         return "lcd display virker ikke"
 
 testing = True
@@ -186,6 +202,7 @@ if __name__ == "__main__":
       gps_tester()
       opsummering.rotary_encoder = rotary_encoder_tester()
       opsummering.lcd = lcd_tester()
+      opsummering.EEPROM = i2c_ping_EEPROM()
       afslut()
   
   

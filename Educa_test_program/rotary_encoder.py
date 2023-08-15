@@ -2,7 +2,7 @@
 
 from machine import Pin
 from time import ticks_ms
-pin_enc_a = 39
+pin_enc_a = 39 # skal muligvis byttes når vi har monteret studerendes rotary encoder
 pin_enc_b = 36
 
 rotenc_a = Pin(pin_enc_a, Pin.IN, Pin.PULL_UP)
