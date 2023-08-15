@@ -135,15 +135,15 @@ def led_tester(g_val, y_val, r_val):
     
      
 def potentiometer_tester():
-    print("Tester potentiometer. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret? (ja/nej)\n")
+    print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret? (ja/nej)\n")
     sleep(4)
     pot = ADC(Pin(34))
     count = 0
-    while count < 5:
+    while count < 100:
         print(pot.read())
         count +=1
         sleep(0.1)
-    print("Tester potentiometer. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret? (ja/nej/forfra)\n")
+    print("Blev værdier mellem 0 og 4095 når der blev skruet på potentiometeret? (ja/nej/forfra)\n")
     svar_potentiometer = input().lower()
     if svar_potentiometer == "nej":
       print("Gennemgå LED kredsløbet for fejl og prøv igen. Lukker testprogram")
@@ -158,12 +158,11 @@ def potentiometer_tester():
 def knap_tester():
     led1 = Pin(26, Pin.OUT)
     led1.value(0)
-    print("Tester tryknapperne, når pb1 trykkes bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke")
+    print("Tester tryknapperne i 10 sekunder, når pb1 trykkes bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke")
     pb1 = Pin(4, Pin.IN)                 # External pull-up and debounce
     pb2 = Pin(0, Pin.IN)                 # Direct connection with pull-up thus inverted
-    #pb2 = Pin(4, Pin.IN, Pin.PULL_DOWN)
     count = 0
-    while count < 10:
+    while count < 100:
         val1 = pb1.value()
         val2 = pb2.value()  
         count +=1
@@ -231,12 +230,15 @@ def lmt84_tester():
 
     mV = adc2mV * adcVal
     temp = (mV - beta) / alpha
-    print("ADC: %3d -> %2.1f °C" % (adcVal, temp))
-    svar_temp = input("Vises nogenlunde korrekt temperatur fra LMT84 sensor? ja/nej\n").lower()
-    if svar_temp == "nej":
-        opsummering.LMT84 = "LMT84 virker ikke"
+    print(f"ADC:{adcVal} \ntemp: {temp}°C")
+    if int(temp) in range(10, 31):
+        print("LMT84 temperatursensor virker")
+        opsummering.LMT84 = "LMT84 temperatursensor virker"
+    #svar_temp = input("Vises nogenlunde korrekt temperatur fra LMT84 sensor? ja/nej\n").lower()
+    #if svar_temp == "nej":
     else:
-        opsummering.LMT84 = "LMT84 virker"
+        print("LMT84 temperatursensor virker ikke")
+        opsummering.LMT84 = "LMT84 temperatursensor virker ikke"
 
 def lcd_tester():
     print("LCD 20x4 test (Husk at sætte JP5 jumper i position R7/til venstre.)\nkan du se teksten på Educa boardets display? ja/nej?")
