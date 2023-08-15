@@ -2,6 +2,7 @@ from machine import UART, Pin
 from time import ticks_ms
 
 def test_gps_pps():
+    print("Tester GPS PPS i 10 sekunder, se om både den grønne LED på GPS modulet og LED1")
     #########################################################################
     # CONFIGURATION
     gpsPort = 2                                 # ESP32 UART port
@@ -56,7 +57,7 @@ def test_gps_pps():
     ba[40] = 0x0D
     ba[41] = 0x0A
 
-    print(uart.write(ba, 42))
+    uart.write(ba, 42)
     pps_pin = Pin(5, Pin.IN)
     led = Pin(26, Pin.OUT)
     start = ticks_ms()
@@ -64,7 +65,10 @@ def test_gps_pps():
     while testing:
         led.value(pps_pin.value())
         if ticks_ms() - start > 10000:
-            print("Stopped")
-            testing = False
-            break
-test_gps_pps()
+            pps_gps_svar = input("Blinkede både den grønne LED på GPS modulet og LED1 i 5Hz? ja/nej").lower()
+            if pps_gps_svar == "ja":
+                return "GPS PPS virker"
+
+            else:
+                return "GPS PPS virker ikke"
+#test_gps_pps()
