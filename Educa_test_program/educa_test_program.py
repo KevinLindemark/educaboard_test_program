@@ -18,7 +18,7 @@ class opsummering:
         print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.gps_pps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}\n{opsummering.EEPROM}")
 
 def test_gps_pps():
-    print("Tester GPS PPS i 10 sekunder, se om både den grønne LED på GPS modulet og LED1")
+    print("Tester GPS PPS i 10 sekunder, kontrollér om både den grønne LED på GPS modulet og LED1 blinker")
     #########################################################################
     # CONFIGURATION
     gpsPort = 2                                 # ESP32 UART port
@@ -78,14 +78,16 @@ def test_gps_pps():
     led = Pin(26, Pin.OUT)
     start = ticks_ms()
     testing = True
+    opsummering.	gps_pps = ""
     while testing:
         led.value(pps_pin.value())
         if ticks_ms() - start > 10000:
-            pps_gps_svar = input("Blinkede både den grønne LED på GPS modulet og LED1 i 5Hz? ja/nej\n").lower()
+            pps_gps_svar = input("Blinkede både den grønne LED på GPS modulet og LED1 i 5Hz? ja/nej/forfra\n").lower()
             if pps_gps_svar == "ja":
-                print("GPS PPS virker")
-                return "GPS PPS virker"
-
+                print("👍 GPS PPS virker")
+                return "👍 GPS PPS virker"
+            elif pps_gps_svar == "forfra":
+                test_gps_pps()
             else:
                 print("GPS PPS virker ikke")
                 return "GPS PPS virker ikke"   
@@ -103,8 +105,8 @@ def gps_tester():
             print(count)
             gps_frames = gps.get_test_frames()
             if gps_frames[0] == True or gps_frames[1] == True:
-                print("GPS virker!")
-                opsummering.gps = "GPS virker"
+                print("👍 GPS virker!")
+                opsummering.gps = "👍 GPS virker"
                 break
             else:
                 print("GPS, virker ikke")
@@ -113,7 +115,9 @@ def gps_tester():
         count +=1
  
 def led_tester(g_val, y_val, r_val):
+    print("Husk at forbinde \"JP1-MISO <-> JP6-GP2\" and \"JP1-MOSI <-> JP6-GP3\"")
     print("Tester LED'er. lyser en grøn, gul og rød LED på educaboardet? (ja/nej)\n")
+    
     yellow = 26                          # Direct connection
     green = 12                         # Put jumper between JP1-MISO and JP6-GP2
     red = 13                            # Put jumper between JP1-MOSI and JP6-GP3
@@ -126,16 +130,20 @@ def led_tester(g_val, y_val, r_val):
     g.value(y_val) # yellow is active low
     y.value(r_val)
     svar_led = input()
-    if svar_led.lower() == "nej":
-     print("Gennemgå LED kredsløbet for fejl og prøv igen. Lukker testprogram")
-     print("Husk at forbinde \"JP1-MISO <-> JP6-GP2\" and \"JP1-MOSI <-> JP6-GP3\"")
-     opsummering.led = "Der er problemer med LED'er"
+    if svar_led.lower() == "ja":
+     print("👍 LED'er virker")   
+     opsummering.led = "👍 LED'er virker"
+     
     else:
-     opsummering.led = "LED'er virker"
+     print("LED'er virker ikke")
+     print("Gennemgå LED kredsløbet for fejl og prøv igen.")
+     print("Husk at forbinde \"JP1-MISO <-> JP6-GP2\" and \"JP1-MOSI <-> JP6-GP3\"\n")
+     sleep(3)
+     opsummering.led = "LED'er virker ikke"
     
      
 def potentiometer_tester():
-    print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret? (ja/nej)\n")
+    print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret?")
     sleep(4)
     pot = ADC(Pin(34))
     count = 0
@@ -145,15 +153,17 @@ def potentiometer_tester():
         sleep(0.1)
     print("Blev værdier mellem 0 og 4095 når der blev skruet på potentiometeret? (ja/nej/forfra)\n")
     svar_potentiometer = input().lower()
-    if svar_potentiometer == "nej":
-      print("Gennemgå LED kredsløbet for fejl og prøv igen. Lukker testprogram")
-      opsummering.potentiometer = "Der er problemer med potentiometeret"
+    if svar_potentiometer == "ja":
+        print("👍 Potentiometeret virker")
+        opsummering.potentiometer = "👍 Potentiometeret virker"
     elif svar_potentiometer == "forfra":
       print("Tester potentiometer igen, kig i shell og skru på potentiometeret")
       sleep(3)
       potentiometer_tester()
     else:
-      opsummering.potentiometer = "Potentiometeret virker"
+      print("Gennemgå LED kredsløbet for fejl og prøv igen. Lukker testprogram")
+      opsummering.potentiometer = "Der er problemer med potentiometeret"
+      
 
 def knap_tester():
     led1 = Pin(26, Pin.OUT)
@@ -176,10 +186,12 @@ def knap_tester():
             led1.value(0)
     svar_knap = input("virker tryknapperne? (når PB1 holdes nede bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke) ja/nej/forfra\n")
     if svar_knap == "ja":
-      opsummering.knapper = "Trykknapper virker"
+      print("👍 Trykknapper virker")
+      opsummering.knapper = "👍 Trykknapper virker"
     elif svar_knap == "forfra":
       knap_tester()
     else:
+      print("Trykknapper virker ikke")
       opsummering.knapper = "Trykknapper virker ikke"
 
 def afslut():
@@ -197,8 +209,8 @@ def i2c_ping_EEPROM():
     try:
         i2c = I2C(0, freq = 400000)                 # I2C H/W 0 object
         i2c.readfrom(0x50, 0)
-        print("EEPROM I2C virker")
-        return "EEPROM I2C virker"
+        print("👍 EEPROM I2C virker")
+        return "👍 EEPROM I2C virker"
     except:
         print("EEPROM I2C virker ikke")
         return "EEPROM I2C virker ikke"
@@ -232,8 +244,8 @@ def lmt84_tester():
     temp = (mV - beta) / alpha
     print(f"ADC:{adcVal} \ntemp: {temp}°C")
     if int(temp) in range(10, 31):
-        print("LMT84 temperatursensor virker")
-        opsummering.LMT84 = "LMT84 temperatursensor virker"
+        print("👍 LMT84 temperatursensor virker")
+        opsummering.LMT84 = "👍 LMT84 temperatursensor virker"
     #svar_temp = input("Vises nogenlunde korrekt temperatur fra LMT84 sensor? ja/nej\n").lower()
     #if svar_temp == "nej":
     else:
@@ -264,7 +276,7 @@ def lcd_tester():
     lcd.putstr('Velkommen til KEA :)')
     svar_lcd = input().lower()
     if svar_lcd == "ja":
-        return "lcd display virker"
+        return "👍 lcd display virker"
     else:
         print("justér det blå trimmepotentiometer så du ser tekst eller firkanter")
         return "lcd display virker ikke"
@@ -283,8 +295,3 @@ if __name__ == "__main__":
       opsummering.lcd = lcd_tester()
       opsummering.EEPROM = i2c_ping_EEPROM()
       afslut()
-  
-  
- 
-
-

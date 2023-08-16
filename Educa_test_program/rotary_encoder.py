@@ -75,7 +75,12 @@ def rotary_encoder_tester():
         res = re_full_step()                    
         if ticks_ms() - start > 15000:
             print("Stopper rotary encoder test - 15 sekunder er gået")
-            return "Rotary encoder virker ikke - tid gået"
+            rotary_timeout_svar = input("Vil du prøve at teste rotary encoder igen? ja/nej")
+            if rotary_timeout_svar == "ja":
+                rotary_timeout_svar == ""
+                return rotary_encoder_tester()
+            else:
+                return "Rotary encoder virker ikke - tid gået"
         # Direction and counter
         counter += res
         if counter < -9 and left == False:
