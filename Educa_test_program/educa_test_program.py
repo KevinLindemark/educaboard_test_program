@@ -18,7 +18,7 @@ class opsummering:
     EEPROM = ""
     port_exp = ""
     def status():
-        print("Viser opsummering af testen: \n")
+        print("\n*** Opsummering af testen: ***\n")
         print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.gps_pps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}\n{opsummering.EEPROM}\n{opsummering.port_exp}")
         print("\n*** HUSK AT GEMME OPSUMMERINGEN TIL UNDERVISEREN HVIS DU SKAL HAVE HJÆLP ***")
         print("*** HUSK AT SKRIVE NAVN PÅ DIT EDUCABOARD ***")
