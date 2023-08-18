@@ -3,6 +3,8 @@ from time import sleep, ticks_ms
 from gps_GPGGA_GPZDA import GPS_GPGGA_GPZDA
 from rotary_encoder import rotary_encoder_tester
 from gpio_lcd import GpioLcd
+from port_expander_led_23 import led_og_port_exp_tester
+import _thread
 
 class opsummering:
     led = ""
@@ -14,8 +16,9 @@ class opsummering:
     rotary_encoder = ""
     lcd = ""
     EEPROM = ""
+    port_exp = ""
     def status():
-        print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.gps_pps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}\n{opsummering.EEPROM}")
+        print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.gps_pps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}\n{opsummering.EEPROM}\n{opsummering.port_exp}")
 
 def test_gps_pps():
     print("Tester GPS PPS i 10 sekunder, kontrollér om både den grønne LED på GPS modulet og LED1 blinker")
@@ -28,57 +31,31 @@ def test_gps_pps():
     # OBJECTS
 
     uart = UART(gpsPort, gpsSpeed)              # UART object creation
+    ba = bytearray([
+        0xB5, 0x62,             # Header
+        0x06, 0x31,             # ID 
+        0x20, 0x00,             # Fixed length payload 32 bytes
+        0x00,                   # 0, tpIdx
+        0x01,                   # 1, reserved0
+        0x00, 0x00,             # 2, reserved1
+        0x32, 0x00,             # 4, antCableDelay
+        0x00, 0x00,             # 6, rfGroupDelay
+        0x05, 0x00, 0x00, 0x00, # 8, freqPeriod
+        0x05, 0x00, 0x00, 0x00, # 12, freqPeriodLock
+        0x00, 0x00, 0x00, 0x80, # 16, pulseLenRatio
+        0x00, 0x00, 0x00, 0x80, # 20, pulseLenRatioLock
+        0x00, 0x00, 0x00, 0x00, # 24, userConfigDelay
+        0xEF, 0x00, 0x00, 0x00, # 28, Flags
+        0x83, 0xFA,             # Checksum
+        0x0D, 0x0A ])           # <CR><LF>
 
-    ba = bytearray(42)
-    ba[0] = 0xB5
-    ba[1] = 0x62
-    ba[2] = 0x06
-    ba[3] = 0x31
-    ba[4] = 0x20
-    ba[5] = 0x00
-    ba[6] = 0x00
-    ba[7] = 0x01
-    ba[8] = 0x00
-    ba[9] = 0x00
-    ba[10] = 0x32
-    ba[11] = 0x00
-    ba[12] = 0x00
-    ba[13] = 0x00
-    ba[14] = 0x05
-    ba[15] = 0x00
-    ba[16] = 0x00
-    ba[17] = 0x00
-    ba[18] = 0x05
-    ba[19] = 0x00
-    ba[20] = 0x00
-    ba[21] = 0x00
-    ba[22] = 0x00
-    ba[23] = 0x00
-    ba[24] = 0x00
-    ba[25] = 0x80
-    ba[26] = 0x00
-    ba[27] = 0x00
-    ba[28] = 0x00
-    ba[29] = 0x80
-    ba[30] = 0x00
-    ba[31] = 0x00
-    ba[32] = 0x00
-    ba[33] = 0x00
-    ba[34] = 0xEF
-    ba[35] = 0x00
-    ba[36] = 0x00
-    ba[37] = 0x00
-    ba[38] = 0x83
-    ba[39] = 0xFA
-    ba[40] = 0x0D
-    ba[41] = 0x0A
 
     uart.write(ba, 42)
     pps_pin = Pin(5, Pin.IN)
     led = Pin(26, Pin.OUT)
     start = ticks_ms()
     testing = True
-    opsummering.	gps_pps = ""
+    opsummering.gps_pps = ""
     while testing:
         led.value(pps_pin.value())
         if ticks_ms() - start > 10000:
@@ -90,7 +67,8 @@ def test_gps_pps():
                 test_gps_pps()
             else:
                 print("GPS PPS virker ikke")
-                return "GPS PPS virker ikke"   
+                return "GPS PPS virker ikke"
+
 def gps_tester():
     uart = UART(2, 9600)              # UART object creation
     gps = GPS_GPGGA_GPZDA(uart)
@@ -113,34 +91,31 @@ def gps_tester():
                 opsummering.gps = "GPS virker ikke"
                 break
         count +=1
- 
-def led_tester(g_val, y_val, r_val):
-    print("Husk at forbinde \"JP1-MISO <-> JP6-GP2\" and \"JP1-MOSI <-> JP6-GP3\"")
-    print("Tester LED'er. lyser en grøn, gul og rød LED på educaboardet? (ja/nej)\n")
+
+def led_tester():
     
-    yellow = 26                          # Direct connection
-    green = 12                         # Put jumper between JP1-MISO and JP6-GP2
-    red = 13                            # Put jumper between JP1-MOSI and JP6-GP3
+    print("Tester LED'er og Port expander. blinker en grøn, gul og rød LED på educaboardet? (ja/nej)\n")
+    port_exp_led_blink_thread = _thread.start_new_thread(led_og_port_exp_tester, ())
 
-    g = Pin(green, Pin.OUT)
-    y = Pin(yellow, Pin.OUT)
-    r = Pin(red, Pin.OUT)
-
-    r.value(g_val)
-    g.value(y_val) # yellow is active low
-    y.value(r_val)
     svar_led = input()
     if svar_led.lower() == "ja":
      print("👍 LED'er virker")   
      opsummering.led = "👍 LED'er virker"
+     # TODO kill thread after use
+     port_exp_led_blink_thread.exit()
+     
+     print("👍 Port expander virker")   
+     opsummering.port_exp = "👍 Port expander virker"
+       
      
     else:
      print("LED'er virker ikke")
      print("Gennemgå LED kredsløbet for fejl og prøv igen.")
-     print("Husk at forbinde \"JP1-MISO <-> JP6-GP2\" and \"JP1-MOSI <-> JP6-GP3\"\n")
+     print("Port expander virker ikke")   
+     opsummering.port_exp = "Port expander virker ikke"
+     port_exp_led_blink_thread.exit()
      sleep(3)
      opsummering.led = "LED'er virker ikke"
-    
      
 def potentiometer_tester():
     print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret?")
@@ -285,7 +260,7 @@ testing = True
 if __name__ == "__main__":
     while testing:
       #port_expander_tester() 
-      led_tester(1, 0, 1)
+      led_tester()
       potentiometer_tester() 
       knap_tester()
       lmt84_tester()
