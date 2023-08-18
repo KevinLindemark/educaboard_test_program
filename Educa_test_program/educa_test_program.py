@@ -3,6 +3,7 @@ from time import sleep, ticks_ms
 from gps_GPGGA_GPZDA import GPS_GPGGA_GPZDA
 from rotary_encoder import rotary_encoder_tester
 from gpio_lcd import GpioLcd
+from eeprom_navn import eeprom_student_navn
 from port_expander_led_23 import led_og_port_exp_tester, kill
 import _thread
 
@@ -51,7 +52,6 @@ def test_gps_pps():
         0xEF, 0x00, 0x00, 0x00, # 28, Flags
         0x83, 0xFA,             # Checksum
         0x0D, 0x0A ])           # <CR><LF>
-
 
     uart.write(ba, 42)
     pps_pin = Pin(5, Pin.IN)
@@ -255,14 +255,14 @@ def lcd_tester():
 testing = True
 if __name__ == "__main__":
     while testing:
-      #port_expander_tester() 
-      led_tester()
-      potentiometer_tester() 
-      knap_tester()
-      lmt84_tester()
-      opsummering.gps_pps = test_gps_pps()
-      gps_tester()
-      opsummering.rotary_encoder = rotary_encoder_tester()
-      opsummering.lcd = lcd_tester()
-      opsummering.EEPROM = i2c_ping_EEPROM()
-      afslut()
+        eeprom_student_navn()
+        led_tester()
+        potentiometer_tester() 
+        knap_tester()
+        lmt84_tester()
+        opsummering.gps_pps = test_gps_pps()
+        gps_tester()
+        opsummering.rotary_encoder = rotary_encoder_tester()
+        opsummering.lcd = lcd_tester()
+        opsummering.EEPROM = i2c_ping_EEPROM()
+        afslut()
