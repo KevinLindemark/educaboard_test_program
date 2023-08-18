@@ -4,7 +4,7 @@ import time
 from portExp_MCP23S08 import PortExp_MCP23S08
 def led_og_port_exp_tester():
     led1 = Pin(26, Pin.OUT)
-    led1.on()
+    
     # SPI BUS AND MCP23S08
     hspi = SPI(1, 10000000)                     # Create the SPI bus object running at 10 MHz
     pin_portexp_cs = 15                         # The MCP23S08 CS pin number
@@ -31,8 +31,10 @@ def led_og_port_exp_tester():
             if res == portExp.OFF:
                 portExp.gp_set_value(gp_led2, portExp.ON)
                 portExp.gp_set_value(gp_led3, portExp.OFF)
+                led1.off()
             else:        
                 portExp.gp_set_value(gp_led2, portExp.OFF)
                 portExp.gp_set_value(gp_led3, portExp.ON)
+                led1.on()
             
             timeLastToggle = time.ticks_ms()
