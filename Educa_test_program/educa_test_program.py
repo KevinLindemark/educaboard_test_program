@@ -3,7 +3,7 @@ from time import sleep, ticks_ms
 from gps_GPGGA_GPZDA import GPS_GPGGA_GPZDA
 from rotary_encoder import rotary_encoder_tester
 from gpio_lcd import GpioLcd
-from port_expander_led_23 import led_og_port_exp_tester
+from port_expander_led_23 import led_og_port_exp_tester, kill
 import _thread
 
 class opsummering:
@@ -93,7 +93,6 @@ def gps_tester():
         count +=1
 
 def led_tester():
-    
     print("Tester LED'er og Port expander. blinker en grøn, gul og rød LED på educaboardet? (ja/nej)\n")
     port_exp_led_blink_thread = _thread.start_new_thread(led_og_port_exp_tester, ())
 
@@ -102,7 +101,7 @@ def led_tester():
      print("👍 LED'er virker")   
      opsummering.led = "👍 LED'er virker"
      # TODO kill thread after use
-     port_exp_led_blink_thread.exit()
+     kill["thread1"] = True
      
      print("👍 Port expander virker")   
      opsummering.port_exp = "👍 Port expander virker"
@@ -113,7 +112,7 @@ def led_tester():
      print("Gennemgå LED kredsløbet for fejl og prøv igen.")
      print("Port expander virker ikke")   
      opsummering.port_exp = "Port expander virker ikke"
-     port_exp_led_blink_thread.exit()
+     kill["thread1"] = True
      sleep(3)
      opsummering.led = "LED'er virker ikke"
      
@@ -126,7 +125,7 @@ def potentiometer_tester():
         print(pot.read())
         count +=1
         sleep(0.1)
-    print("Blev værdier mellem 0 og 4095 når der blev skruet på potentiometeret? (ja/nej/forfra)\n")
+    print("Blev værdier mellem 0 og 4095 vist når der blev skruet på potentiometeret? (ja/nej/forfra)\n")
     svar_potentiometer = input().lower()
     if svar_potentiometer == "ja":
         print("👍 Potentiometeret virker")
@@ -139,7 +138,6 @@ def potentiometer_tester():
       print("Gennemgå LED kredsløbet for fejl og prøv igen. Lukker testprogram")
       opsummering.potentiometer = "Der er problemer med potentiometeret"
       
-
 def knap_tester():
     led1 = Pin(26, Pin.OUT)
     led1.value(0)
@@ -189,11 +187,7 @@ def i2c_ping_EEPROM():
     except:
         print("EEPROM I2C virker ikke")
         return "EEPROM I2C virker ikke"
-def port_expander_tester():
-    # TODO tag duponter kabler af og test at 2x LED2 og LED3 kan blinke
-    # kør som noget af det første inden LED kode køres
-    # tag kode fra port expander eksempel koden
-    ...
+
 def lmt84_tester():
     # TODO lav en automatisk test uden bruger input (temp mellem range og range mellem 10 - 30)
     print("LMT84 test\n")

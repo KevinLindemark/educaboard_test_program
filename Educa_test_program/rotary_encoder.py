@@ -87,9 +87,9 @@ def rotary_encoder_tester():
             print("Ok, drej nu til tallet er over 10")
             left = True
         if counter > 10 and left == True:
-            print("Rotary encoder virker")
+            print("👍 Rotary encoder virker")
             testing = False
-            return "Rotary encoder virker"
+            return "👍 Rotary encoder virker"
         if (res == 1):
             print("Right/CW: %d" % counter)
         elif (res == -1):

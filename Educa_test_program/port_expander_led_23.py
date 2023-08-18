@@ -1,7 +1,10 @@
 from machine import Pin, SPI
 import time
-
+import _thread
 from portExp_MCP23S08 import PortExp_MCP23S08
+
+kill = {"thread1":False}
+
 def led_og_port_exp_tester():
     led1 = Pin(26, Pin.OUT)
     
@@ -38,3 +41,8 @@ def led_og_port_exp_tester():
                 led1.on()
             
             timeLastToggle = time.ticks_ms()
+        if kill["thread1"] == True:
+            portExp.gp_set_value(gp_led2, portExp.ON)
+            portExp.gp_set_value(gp_led3, portExp.OFF)
+            led1.off()
+            _thread.exit()
