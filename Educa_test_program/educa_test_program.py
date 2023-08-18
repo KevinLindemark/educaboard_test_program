@@ -3,9 +3,13 @@ from time import sleep, ticks_ms
 from gps_GPGGA_GPZDA import GPS_GPGGA_GPZDA
 from rotary_encoder import rotary_encoder_tester
 from gpio_lcd import GpioLcd
-from eeprom_navn import eeprom_student_navn
+
 from port_expander_led_23 import led_og_port_exp_tester, kill
 import _thread
+import eeprom_24xx64
+test_time = 1000
+
+i2c = I2C(0)              # I2C H/W 0 object
 
 class opsummering:
     led = ""
@@ -61,7 +65,7 @@ def test_gps_pps():
     opsummering.gps_pps = ""
     while testing:
         led.value(pps_pin.value())
-        if ticks_ms() - start > 10000:
+        if ticks_ms() - start > test_time:
             pps_gps_svar = input("Blinkede både den grønne LED på GPS modulet og LED1 i 5Hz? ja/nej/forfra\n").lower()
             if pps_gps_svar == "ja":
                 print("👍 GPS PPS virker")
@@ -77,13 +81,13 @@ def gps_tester():
     gps = GPS_GPGGA_GPZDA(uart)
     print("Tester GPS")
     count = 0
-    while True:      
-        if count > 100000:
+    while True:
+        if count > 1000000:
                 print("GPS, virker ikke")
                 opsummering.gps = "GPS virker ikke"
                 break           
-        if (gps.receive_nmea_data(True)):
-            print(count)
+        if (gps.receive_nmea_data()):
+            #print(count)
             gps_frames = gps.get_test_frames()
             if gps_frames[0] == True or gps_frames[1] == True:
                 print("👍 GPS virker!")
@@ -122,10 +126,9 @@ def potentiometer_tester():
     print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret?")
     sleep(4)
     pot = ADC(Pin(34))
-    count = 0
-    while count < 100:
+    start = ticks_ms()
+    while ticks_ms() - start < test_time:
         print(pot.read())
-        count +=1
         sleep(0.1)
     print("Blev værdier mellem 0 og 4095 vist når der blev skruet på potentiometeret? (ja/nej/forfra)\n")
     svar_potentiometer = input().lower()
@@ -146,11 +149,10 @@ def knap_tester():
     print("Tester tryknapperne i 10 sekunder, når pb1 trykkes bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke")
     pb1 = Pin(4, Pin.IN)                 # External pull-up and debounce
     pb2 = Pin(0, Pin.IN)                 # Direct connection with pull-up thus inverted
-    count = 0
-    while count < 100:
+    start = ticks_ms()
+    while ticks_ms() - start < test_time:
         val1 = pb1.value()
         val2 = pb2.value()  
-        count +=1
         sleep(0.1)
         if val1 == 0:
             led1.value(1)
@@ -178,12 +180,26 @@ def afslut():
     else:
       print("Kører testen igen")
 
-def i2c_ping_EEPROM():
+def eeprom_student_navn(i2c_obj):
+
+    e = eeprom_24xx64.EEPROM_24xx64(i2c_obj)
+
+    navn_byte = e.read_byte(8000)
+    if navn_byte > 20:
+        studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")
+        while len(studerendes_navn) > 20:
+            print("Uyldigt navn, prøv igen og skriv det kortere! (Max 20 tegn)")
+            studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")
+            
+        else:    
+            e.write_string(8000, studerendes_navn)
+            print("Dit navn: ",e.read_string(8000))
+            
+def i2c_ping_EEPROM(i2c_obj):
     # husk at importere I2C fra machine modulet
     print("Tester EEPROM I2C")
     try:
-        i2c = I2C(0, freq = 400000)                 # I2C H/W 0 object
-        i2c.readfrom(0x50, 0)
+        i2c_obj.readfrom(0x50, 0)
         print("👍 EEPROM I2C virker")
         return "👍 EEPROM I2C virker"
     except:
@@ -255,7 +271,7 @@ def lcd_tester():
 testing = True
 if __name__ == "__main__":
     while testing:
-        eeprom_student_navn()
+        #eeprom_student_navn(i2c) # TODO fix bug der gør at I2C test ikke virker når denne køres!
         led_tester()
         potentiometer_tester() 
         knap_tester()
@@ -264,5 +280,5 @@ if __name__ == "__main__":
         gps_tester()
         opsummering.rotary_encoder = rotary_encoder_tester()
         opsummering.lcd = lcd_tester()
-        opsummering.EEPROM = i2c_ping_EEPROM()
+        opsummering.EEPROM = i2c_ping_EEPROM(i2c)
         afslut()
