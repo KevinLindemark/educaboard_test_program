@@ -6,11 +6,10 @@ from gpio_lcd import GpioLcd
 
 from port_expander_led_23 import led_og_port_exp_tester, kill
 import _thread
-import eeprom_24xx64
-test_time = 1000
+from eeprom_tests import eeprom_tester
 
+test_time = 10000 # time in milliseconds for tests
 i2c = I2C(0)              # I2C H/W 0 object
-
 class opsummering:
     led = ""
     potentiometer = ""
@@ -80,12 +79,12 @@ def gps_tester():
     uart = UART(2, 9600)              # UART object creation
     gps = GPS_GPGGA_GPZDA(uart)
     print("Tester GPS")
+    for i in range(15):
+        gps.receive_nmea_data()
+        sleep(0.1)
+    
     count = 0
-    while True:
-        if count > 1000000:
-                print("GPS, virker ikke")
-                opsummering.gps = "GPS virker ikke"
-                break           
+    while True:           
         if (gps.receive_nmea_data()):
             #print(count)
             gps_frames = gps.get_test_frames()
@@ -107,7 +106,6 @@ def led_tester():
     if svar_led.lower() == "ja":
      print("👍 LED'er virker")   
      opsummering.led = "👍 LED'er virker"
-     # TODO kill thread after use
      kill["thread1"] = True
      
      print("👍 Port expander virker")   
@@ -180,31 +178,6 @@ def afslut():
     else:
       print("Kører testen igen")
 
-def eeprom_student_navn(i2c_obj):
-
-    e = eeprom_24xx64.EEPROM_24xx64(i2c_obj)
-
-    navn_byte = e.read_byte(8000)
-    if navn_byte > 20:
-        studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")
-        while len(studerendes_navn) > 20:
-            print("Uyldigt navn, prøv igen og skriv det kortere! (Max 20 tegn)")
-            studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")
-            
-        else:    
-            e.write_string(8000, studerendes_navn)
-            print("Dit navn: ",e.read_string(8000))
-            
-def i2c_ping_EEPROM(i2c_obj):
-    # husk at importere I2C fra machine modulet
-    print("Tester EEPROM I2C")
-    try:
-        i2c_obj.readfrom(0x50, 0)
-        print("👍 EEPROM I2C virker")
-        return "👍 EEPROM I2C virker"
-    except:
-        print("EEPROM I2C virker ikke")
-        return "EEPROM I2C virker ikke"
 
 def lmt84_tester():
     # TODO lav en automatisk test uden bruger input (temp mellem range og range mellem 10 - 30)
@@ -267,11 +240,14 @@ def lcd_tester():
     else:
         print("justér det blå trimmepotentiometer så du ser tekst eller firkanter")
         return "lcd display virker ikke"
-
+ 
 testing = True
+
+e = eeprom_tester()
 if __name__ == "__main__":
     while testing:
-        #eeprom_student_navn(i2c) # TODO fix bug der gør at I2C test ikke virker når denne køres!
+        opsummering.EEPROM = e.i2c_ping_EEPROM()
+        e.eeprom_student_navn()
         led_tester()
         potentiometer_tester() 
         knap_tester()
@@ -280,5 +256,5 @@ if __name__ == "__main__":
         gps_tester()
         opsummering.rotary_encoder = rotary_encoder_tester()
         opsummering.lcd = lcd_tester()
-        opsummering.EEPROM = i2c_ping_EEPROM(i2c)
+
         afslut()

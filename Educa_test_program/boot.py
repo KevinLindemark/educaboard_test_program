@@ -25,9 +25,9 @@ def lcd_skriv_navn():
                   num_lines=4, num_columns=20)
     lcd.clear()
     lcd.putstr("Velkommmen til KEA's")
-    lcd.move_to(4, 1)
+    lcd.move_to(0, 1)
     lcd.putstr("IT-Teknolog")    
-    lcd.move_to(4, 2)
+    lcd.move_to(0, 2)
     lcd.putstr("Uddannelse! :)")
     lcd.move_to(0, 3)
     lcd.putstr(e.read_string(8000))
@@ -35,4 +35,4 @@ def lcd_skriv_navn():
 navn = e.read_byte(8000)
 
 if navn < 20:
-    lcd_skriv_navn()      
+    lcd_skriv_navn()

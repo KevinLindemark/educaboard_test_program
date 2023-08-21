@@ -127,7 +127,7 @@ class EEPROM_24xx64():
             self.i2c_bus.writeto_mem(self.i2c_address, addr, ba, addrsize = self.I2C_ADDRESS_SIZE)
             sleep_ms(5)                         # Needed due to EEPROM write timing, see datasheet Twc 
 
-    
+     
     def read_string(self, addr):
         # Check addr
         if addr < 0 or addr > self.EEPROM_SIZE - 2:# -2 because first address is 0 and length also saved to EEPROM
@@ -135,9 +135,10 @@ class EEPROM_24xx64():
 
         # Read the string
         length = self.read_byte(addr)        # First read the length of the string
-        
+        #print(f"value of length: {length}")
         string = ""
         for i in range(length):
+            #print("in for loop")
             string += chr(self.read_byte(addr + i + 1))  # +1 because start_addr contains the length of the string
             
         return string
@@ -176,7 +177,7 @@ class EEPROM_24xx64():
     #        If there is an error the error code is returned
     #        If no error formatted data from the EEPROM, first in hex then the character if possible
     #
-    def print(self, start_addr = 0, count = EEPROM_SIZE):
+    def print_eeprom(self, start_addr = 0, count = EEPROM_SIZE):
         # Check input parameters
         if start_addr < 0 or start_addr > self.EEPROM_SIZE - 1:# -1 because first address is 0
             return -1
