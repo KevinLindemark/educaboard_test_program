@@ -33,6 +33,6 @@ def lcd_skriv_navn():
     lcd.putstr(e.read_string(8000))
     
 navn = e.read_byte(8000)
-
-if navn < 20:
+print(navn)
+if navn <= 20:
     lcd_skriv_navn()

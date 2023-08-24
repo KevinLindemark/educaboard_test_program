@@ -21,8 +21,7 @@ class eeprom_tester:
                 
     def slet_navn(self):
         print("Sletter EEPROM navn")
-        self.eeprom.clear() 
-        #self.eeprom.write_byte(8000, 0) # sætter længden af navn til 0 i EEPROM
+        self.eeprom.write_byte(8000, 0) # sætter længden af navn til 0 i EEPROM
         
            
     def i2c_ping_EEPROM(self):
