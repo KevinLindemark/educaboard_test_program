@@ -8,20 +8,17 @@ class eeprom_tester:
     
     def eeprom_student_navn(self): 
         navn_byte = self.eeprom.read_byte(8000)
-        #print(navn_byte)
         if navn_byte > 20 or navn_byte == 0:
             studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")
             while len(studerendes_navn) > 20:
                 print("Navn for langt, prøv igen og skriv det kortere! (Max 20 tegn)")
-                studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")
-                
+                studerendes_navn = input("Skriv dit navn og efternavn og tryk enter - Max 20 tegn\n")                
             else:    
                 self.eeprom.write_string(8000, studerendes_navn)
                 print("Dit navn: ",self.eeprom.read_string(8000))
                 
     def slet_navn(self):
         print("Sletter EEPROM navn")
-        #self.eeprom.clear() 
         self.eeprom.write_byte(8000, 0) # sætter længden af navn til 0 i EEPROM     
            
     def i2c_ping_EEPROM(self):
@@ -29,7 +26,6 @@ class eeprom_tester:
         print("Tester EEPROM I2C")
         ping = self.i2c.scan()
         if ping[0] == 80:
-
             print("👍 EEPROM I2C virker")
             return "👍 EEPROM I2C virker"
         else:

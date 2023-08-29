@@ -31,8 +31,21 @@ def lcd_skriv_navn():
     lcd.putstr("Uddannelse! :)")
     lcd.move_to(0, 3)
     lcd.putstr(e.read_string(8000))
+
+def lcd_skriv_velkomst():
+    # Create the LCD object
+    lcd = GpioLcd(rs_pin=Pin(27), enable_pin=Pin(25),
+                  d4_pin=Pin(33), d5_pin=Pin(32), d6_pin=Pin(21), d7_pin=Pin(22),
+                  num_lines=4, num_columns=20)
+    lcd.clear()
+    lcd.putstr("Velkommmen til KEA's")
+    lcd.move_to(0, 1)
+    lcd.putstr("IT-Teknolog")    
+    lcd.move_to(0, 2)
+    lcd.putstr("Uddannelse! :)")
     
 navn = e.read_byte(8000)
-print(navn)
 if navn <= 20:
     lcd_skriv_navn()
+else:
+    lcd_skriv_velkomst()

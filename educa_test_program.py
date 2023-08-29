@@ -8,7 +8,7 @@ from port_expander_led_23 import led_og_port_exp_tester, kill
 import _thread
 from eeprom_tests import eeprom_tester
 
-test_time = 10000 # time in milliseconds for tests
+test_time = 100 # time in milliseconds for tests
 i2c = I2C(0)              # I2C H/W 0 object
 class opsummering:
     led = ""
@@ -214,26 +214,19 @@ def lmt84_tester():
 
 def lcd_tester():
     print("LCD 20x4 test (Husk at sætte JP5 jumper i position R7/til venstre.)\nkan du se teksten på Educa boardets display? ja/nej?")
-
+    
     # Create the LCD object
     lcd = GpioLcd(rs_pin=Pin(27), enable_pin=Pin(25),
                   d4_pin=Pin(33), d5_pin=Pin(32), d6_pin=Pin(21), d7_pin=Pin(22),
                   num_lines=4, num_columns=20)
     lcd.clear()
-    sleep(2)
-    lcd.putstr('* Educaboard ESP32 *')
-
-    lcd.move_to(1, 1)
-    lcd.putstr('KEA ITT www.kea.dk')
-
-    lcd.move_to(1, 2)
-    lcd.putstr('HD44780 LCD 4 bits')
-
+    lcd.putstr("Velkommmen til KEA's")
+    lcd.move_to(0, 1)
+    lcd.putstr("IT-Teknolog")
+    lcd.move_to(0, 2)
+    lcd.putstr("Uddannelse! :)")
     lcd.move_to(0, 3)
-    # happy_face = bytearray([0x00, 0x0A, 0x00, 0x04, 0x00, 0x11, 0x0E, 0x00])
-    # lcd.custom_char(0, happy_face)
-    # lcd.putchar(chr(0))
-    lcd.putstr('Velkommen til KEA :)')
+    lcd.putstr(e.eeprom.read_string(8000))
     svar_lcd = input().lower()
     if svar_lcd == "ja":
         return "👍 lcd display virker"
@@ -256,5 +249,4 @@ if __name__ == "__main__":
         gps_tester()
         opsummering.rotary_encoder = rotary_encoder_tester()
         opsummering.lcd = lcd_tester()
-
         afslut()

@@ -27,7 +27,6 @@
 import struct                               # Needed for float handling
 from time import sleep_ms                   # Needed for timing issues in the EEPROM
           
-
 class EEPROM_24xx64():
     # 24xx64 parameters from the datasheet
     PAGE_SIZE = 32                          # The page size of the 24xx64
@@ -39,18 +38,15 @@ class EEPROM_24xx64():
         self.i2c_bus = i2c_bus
         self.i2c_address = i2c_address
 
-
     def read_byte(self, addr):
         val = self.i2c_bus.readfrom_mem(self.i2c_address, addr, 1, addrsize = self.I2C_ADDRESS_SIZE)
         return val[0]
-
 
     def write_byte(self, addr, val):
         ba = bytearray(1)
         ba[0] = val
         self.i2c_bus.writeto_mem(self.i2c_address, addr, ba, addrsize = self.I2C_ADDRESS_SIZE)
         sleep_ms(5)                          # Needed due to EEPROM write timing, see datasheet Twc
-
 
     def read_word(self, addr):
         ba = bytearray(2)                    # Info: ESP32 uses big endianess
@@ -88,7 +84,6 @@ class EEPROM_24xx64():
 
         return (ba[0] << 24) + (ba[1] << 16) + (ba[2] << 8) + ba[3]
 
-
     def write_integer(self, addr, val):
         ba = bytearray(4)
         ba[0] = val >> 24                    # Info: ESP32 uses big endianess
@@ -102,7 +97,6 @@ class EEPROM_24xx64():
         else:                                # Full integer within the same page
             self.i2c_bus.writeto_mem(self.i2c_address, addr, ba, addrsize = self.I2C_ADDRESS_SIZE)
             sleep_ms(5)                      # Needed due to EEPROM write timing, see datasheet Twc
-
     
     def read_float(self, addr):
         ba = bytearray(4)                       # https://docs.python.org/3/library/struct.html ESP32 uses big endianess
@@ -116,7 +110,6 @@ class EEPROM_24xx64():
         val = struct.unpack(">f", ba)
         return val[0]
 
-
     def write_float(self, addr, val):
         ba = bytearray(struct.pack(">f", val))  # https://docs.python.org/3/library/struct.html ESP32 uses big endianess
         
@@ -126,8 +119,7 @@ class EEPROM_24xx64():
         else:                                   # Full float within the same page
             self.i2c_bus.writeto_mem(self.i2c_address, addr, ba, addrsize = self.I2C_ADDRESS_SIZE)
             sleep_ms(5)                         # Needed due to EEPROM write timing, see datasheet Twc 
-
-     
+    
     def read_string(self, addr):
         # Check addr
         if addr < 0 or addr > self.EEPROM_SIZE - 2:# -2 because first address is 0 and length also saved to EEPROM
@@ -139,30 +131,23 @@ class EEPROM_24xx64():
         string = ""
         for i in range(length):
             #print("in for loop")
-            string += chr(self.read_byte(addr + i + 1))  # +1 because start_addr contains the length of the string
-            
+            string += chr(self.read_byte(addr + i + 1))  # +1 because start_addr contains the length of the string           
         return string
-    
-    
+        
     def write_string(self, addr, string):    # Max string length is 255 characters
         # Check input parameters
         if addr < 0 or addr > self.EEPROM_SIZE - 2:# -2 because first address is 0 and length also saved to EEPROM
             return -1
-
         length = len(string)                 # The length of the string
         if length > 255:                     # 255 because first address is the length in a single byte
             return -2
-
         if addr + length > self.EEPROM_SIZE - 2:  # -2 because of length index. Can't save beyond the EEPROM size
-            return -3
-        
+            return -3        
         # Save the string
         self.write_byte(addr, length)        # First save the length of the string
         for i in range(length):
-            self.write_byte(addr + i + 1, ord(string[i]))  # +1 because start_addr contains the length of the string
-            
+            self.write_byte(addr + i + 1, ord(string[i]))  # +1 because start_addr contains the length of the string           
         return 0
-
 
     # Prints the EEPROM data
     #     Automatically rounds the starting address down to the nearest modulus 16
@@ -221,11 +206,9 @@ class EEPROM_24xx64():
                 if ((ba[j] < 32) or (ba[j] > 126)):  # Handle the non-printable characters
                     print(". ", end = '')
                 else:
-                    print("%c " % (ba[j]), end = '')
-            
+                    print("%c " % (ba[j]), end = '')           
             print()
             
-
     # Clears the entire EEPROM, i.e. setting the factory value to each byte
     #     One page at a time is cleared
     #
@@ -243,6 +226,4 @@ class EEPROM_24xx64():
         for i in range (self.EEPROM_SIZE / self.PAGE_SIZE):
             self.i2c_bus.writeto_mem(self.i2c_address, self.PAGE_SIZE * i, ba, addrsize = self.I2C_ADDRESS_SIZE) # Clear a full page
             sleep_ms(5)                         # Needed due to EEPROM write timing, see datasheet Twc
-        
-
 # EOF ################################################################################
