@@ -8,7 +8,7 @@ from port_expander_led_23 import led_og_port_exp_tester, kill
 import _thread
 from eeprom_tests import eeprom_tester
 
-test_time = 100 # time in milliseconds for tests
+test_time = 10000 # time in milliseconds for tests
 i2c = I2C(0)              # I2C H/W 0 object
 class opsummering:
     led = ""
