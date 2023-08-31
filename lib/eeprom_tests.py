@@ -25,9 +25,10 @@ class eeprom_tester:
         # husk at importere I2C fra machine modulet
         print("Tester EEPROM I2C")
         ping = self.i2c.scan()
-        if ping[0] == 80:
-            print("👍 EEPROM I2C virker")
-            return "👍 EEPROM I2C virker"
-        else:
-            print("EEPROM I2C virker ikke")
-            return "EEPROM I2C virker ikke"
+        try:
+            if ping[0] == 80:
+                print("👍 EEPROM I2C virker")
+                return "👍 EEPROM I2C virker"
+        except:
+            print("👎 EEPROM I2C virker ikke")
+            return "👎 EEPROM I2C virker ikke"

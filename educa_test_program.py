@@ -21,6 +21,7 @@ class opsummering:
     lcd = ""
     EEPROM = ""
     port_exp = ""
+    
     def status():
         print("\n*** Opsummering af testen: ***\n")
         print(f"\n{opsummering.led}\n{opsummering.potentiometer}\n{opsummering.knapper}\n{opsummering.LMT84}\n{opsummering.gps}\n{opsummering.gps_pps}\n{opsummering.rotary_encoder}\n{opsummering.lcd}\n{opsummering.EEPROM}\n{opsummering.port_exp}")
@@ -65,15 +66,15 @@ def test_gps_pps():
     while testing:
         led.value(pps_pin.value())
         if ticks_ms() - start > test_time:
-            pps_gps_svar = input("Blinkede både den grønne LED på GPS modulet og LED1 i 5Hz? ja/nej/forfra\n").lower()
+            pps_gps_svar = input("Blinkede både den grønne LED på GPS modulet og LED1 i 5Hz? ja/nej/forfra\n> ").lower()
             if pps_gps_svar == "ja":
                 print("👍 GPS PPS virker")
                 return "👍 GPS PPS virker"
             elif pps_gps_svar == "forfra":
                 test_gps_pps()
             else:
-                print("GPS PPS virker ikke")
-                return "GPS PPS virker ikke"
+                print("👎 GPS PPS virker ikke")
+                return "👎 GPS PPS virker ikke"
 
 def gps_tester():
     uart = UART(2, 9600)              # UART object creation
@@ -93,16 +94,23 @@ def gps_tester():
                 opsummering.gps = "👍 GPS virker"
                 break
             else:
-                print("GPS, virker ikke")
-                opsummering.gps = "GPS virker ikke"
+                print("👎 GPS, virker ikke")
+                opsummering.gps = "👎 GPS virker ikke"
                 break
         count +=1
+        
+        if count == 200:
+            opsummering.gps = "👎 GPS virker ikke"
+            print("👎 GPS virker ikke")
+            break
+        
+        sleep(0.1)
 
 def led_tester():
     print("Tester LED'er og Port expander. blinker en grøn, gul og rød LED på educaboardet? (ja/nej)\n")
     port_exp_led_blink_thread = _thread.start_new_thread(led_og_port_exp_tester, ())
 
-    svar_led = input()
+    svar_led = input("> ")
     if svar_led.lower() == "ja":
      print("👍 LED'er virker")   
      opsummering.led = "👍 LED'er virker"
@@ -112,13 +120,13 @@ def led_tester():
      opsummering.port_exp = "👍 Port expander virker"
          
     else:
-     print("LED'er virker ikke")
+     print("👎 LED'er virker ikke")
      print("Gennemgå LED kredsløbet for fejl og prøv igen.")
-     print("Port expander virker ikke")   
-     opsummering.port_exp = "Port expander virker ikke"
+     print("👎 Port expander virker ikke")   
+     opsummering.port_exp = "👎 Port expander virker ikke"
      kill["thread1"] = True
      sleep(3)
-     opsummering.led = "LED'er virker ikke"
+     opsummering.led = "👎 LED'er virker ikke"
      
 def potentiometer_tester():
     print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret?")
@@ -129,7 +137,7 @@ def potentiometer_tester():
         print(pot.read())
         sleep(0.1)
     print("Blev værdier mellem 0 og 4095 vist når der blev skruet på potentiometeret? (ja/nej/forfra)\n")
-    svar_potentiometer = input().lower()
+    svar_potentiometer = input("> ").lower()
     if svar_potentiometer == "ja":
         print("👍 Potentiometeret virker")
         opsummering.potentiometer = "👍 Potentiometeret virker"
@@ -139,12 +147,12 @@ def potentiometer_tester():
       potentiometer_tester()
     else:
       print("Gennemgå LED kredsløbet for fejl og prøv igen. Lukker testprogram")
-      opsummering.potentiometer = "Der er problemer med potentiometeret"
+      opsummering.potentiometer = "👎 Der er problemer med potentiometeret"
       
 def knap_tester():
     led1 = Pin(26, Pin.OUT)
     led1.value(0)
-    print("Tester tryknapperne i 10 sekunder, når pb1 trykkes bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke")
+    print("Tester tryknapperne i 10 sekunder, når PB1 trykkes bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke")
     pb1 = Pin(4, Pin.IN)                 # External pull-up and debounce
     pb2 = Pin(0, Pin.IN)                 # Direct connection with pull-up thus inverted
     start = ticks_ms()
@@ -159,18 +167,18 @@ def knap_tester():
             sleep(0.1)
         else:
             led1.value(0)
-    svar_knap = input("virker tryknapperne? (når PB1 holdes nede bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke) ja/nej/forfra\n")
+    svar_knap = input("virker tryknapperne? (når PB1 holdes nede bør LED1 lyse, og når PB2 holdes nede bør LED1 blinke) ja/nej/forfra\n> ")
     if svar_knap == "ja":
       print("👍 Trykknapper virker")
       opsummering.knapper = "👍 Trykknapper virker"
     elif svar_knap == "forfra":
       knap_tester()
     else:
-      print("Trykknapper virker ikke")
-      opsummering.knapper = "Trykknapper virker ikke"
+      print("👎 Trykknapper virker ikke")
+      opsummering.knapper = "👎 Trykknapper virker ikke"
 
 def afslut():
-    afslut = input("test er slut - afslut og se opsummering? ja/nej\n")
+    afslut = input("test er slut - afslut og se opsummering? ja/nej\n> ")
     if afslut == "ja":
       opsummering.status()
       global testing
@@ -209,8 +217,8 @@ def lmt84_tester():
     #svar_temp = input("Vises nogenlunde korrekt temperatur fra LMT84 sensor? ja/nej\n").lower()
     #if svar_temp == "nej":
     else:
-        print("LMT84 temperatursensor virker ikke")
-        opsummering.LMT84 = "LMT84 temperatursensor virker ikke"
+        print("👎 LMT84 temperatursensor virker ikke")
+        opsummering.LMT84 = "👎 LMT84 temperatursensor virker ikke"
 
 def lcd_tester():
     print("LCD 20x4 test (Husk at sætte JP5 jumper i position R7/til venstre.)\nkan du se teksten på Educa boardets display? ja/nej?")
@@ -227,12 +235,12 @@ def lcd_tester():
     lcd.putstr("Uddannelse! :)")
     lcd.move_to(0, 3)
     lcd.putstr(e.eeprom.read_string(8000))
-    svar_lcd = input().lower()
+    svar_lcd = input("> ").lower()
     if svar_lcd == "ja":
         return "👍 lcd display virker"
     else:
         print("justér det blå trimmepotentiometer så du ser tekst eller firkanter")
-        return "lcd display virker ikke"
+        return "👎 lcd display virker ikke"
  
 testing = True
 

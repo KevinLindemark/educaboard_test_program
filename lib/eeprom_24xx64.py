@@ -39,8 +39,12 @@ class EEPROM_24xx64():
         self.i2c_address = i2c_address
 
     def read_byte(self, addr):
-        val = self.i2c_bus.readfrom_mem(self.i2c_address, addr, 1, addrsize = self.I2C_ADDRESS_SIZE)
-        return val[0]
+        try:
+            val = self.i2c_bus.readfrom_mem(self.i2c_address, addr, 1, addrsize = self.I2C_ADDRESS_SIZE)
+            return val[0]
+        except:
+            return -1
+        
 
     def write_byte(self, addr, val):
         ba = bytearray(1)
