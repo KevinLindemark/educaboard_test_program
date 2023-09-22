@@ -131,7 +131,7 @@ def led_tester():
 def potentiometer_tester():
     print("Tester potentiometer i 10 sekunder. Vises værdier mellem 0 og 4095 når der skrues på potentiometeret?")
     sleep(4)
-    pot = ADC(Pin(34))
+    pot = ADC(Pin(34), atten=3)
     start = ticks_ms()
     while ticks_ms() - start < test_time:
         print(pot.read())
