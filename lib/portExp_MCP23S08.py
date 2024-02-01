@@ -76,7 +76,7 @@ class PortExp_MCP23S08():
         if gp < 0 or gp > 7 or (val != OUTPUT and val != INPUT): # Check the input parameters
             return
         
-        reg_val = self.read_byte(IODIR)     # Read the current status of the register
+        reg_val = self.read_register(IODIR) # Read the current status of the register     # Read the current status of the register
         if val == OUTPUT:                   # Direction is output
             reg_val &= ~(1 << gp)
         else:                               # Direction is input
